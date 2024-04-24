@@ -1,0 +1,142 @@
+# .SQL Code to crate New Databases into SQL Express
+# this code does not contain dump data into tables since we are handling +1M data
+USE [StockDB]
+GO
+/****** Object:  Table [dbo].[NasdaqCompanies]    Script Date: 2/26/2024 8:43:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NasdaqCompanies](
+	[Company] [nvarchar](50) NOT NULL,
+	[Symbol] [nvarchar](50) NOT NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[NasdaqStocks]    Script Date: 2/26/2024 8:43:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NasdaqStocks](
+	[Ticker] [nvarchar](50) NOT NULL,
+	[DateN] [date] NOT NULL,
+	[OpenN] [float] NOT NULL,
+	[HighN] [float] NOT NULL,
+	[LowN] [float] NOT NULL,
+	[CloseN] [float] NOT NULL,
+	[Adj_Close] [float] NOT NULL,
+	[Volume] [float] NOT NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FinancialNews]    Script Date: 2/26/2024 8:43:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FinancialNews](
+	[Ticker] [nvarchar](50) NOT NULL,
+	[Title] [nvarchar](2000) NOT NULL,
+	[URL] [nvarchar](500) NOT NULL,
+	[Time_Published] [datetime2](7) NOT NULL,
+	[Authors] [nvarchar](500) NOT NULL,
+	[Summary] [nvarchar](3000) NOT NULL,
+	[Relevance_Score] [float] NOT NULL,
+	[Ticker_Sentiment_Score] [float] NULL,
+	[Ticker_Sentiment_Label] [nvarchar](50) NULL,
+	[Technology] [float] NULL,
+	[Financial_Markets] [float] NOT NULL,
+	[Economy_Fiscal] [float] NOT NULL,
+	[Economy_Macro] [tinyint] NULL,
+	[Real_Estate_Construction] [float] NOT NULL,
+	[Retail_Wholesale] [float] NOT NULL,
+	[Economy_Monetary] [float] NOT NULL,
+	[Energy_Transportation] [float] NOT NULL,
+	[Life_Sciences] [float] NOT NULL,
+	[Blockchain] [float] NOT NULL,
+	[IPO] [float] NOT NULL,
+	[Earnings] [float] NOT NULL,
+	[Mergers_Acquisitions] [tinyint] NULL,
+	[Manufacturing] [float] NOT NULL,
+	[Finance] [float] NOT NULL
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[Stock_Price_News_Timeline]    Script Date: 2/26/2024 8:43:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[Stock_Price_News_Timeline] AS
+
+WITH FNews_Timeline AS (
+SELECT
+	Ticker,
+	CONVERT(date, Time_Published, 102) as 'Date',
+	Ticker_Sentiment_Label
+FROM FinancialNews
+GROUP BY Ticker, CONVERT(date, Time_Published, 102), Ticker_Sentiment_Label)
+
+SELECT DISTINCT
+	Company,
+	NasdaqStocks.Ticker,
+	CONVERT(date, NasdaqStocks.Date, 102) as 'Date',
+	NasdaqStocks.Adj_Close,
+	(SELECT COUNT(Ticker_Sentiment_Label) FROM FNews_Timeline WHERE Date = CONVERT(date, NasdaqStocks.Date, 102) AND Ticker_Sentiment_Label = 'Neutral' AND Ticker = NasdaqStocks.Ticker) as 'NeutralCount',
+	(SELECT COUNT(Ticker_Sentiment_Label) FROM FNews_Timeline WHERE Date = CONVERT(date, NasdaqStocks.Date, 102) AND (Ticker_Sentiment_Label = 'Bearish' OR Ticker_Sentiment_Label = 'Somewhat-Bearish' ) AND Ticker = NasdaqStocks.Ticker) as 'BearishCount',
+	(SELECT COUNT(Ticker_Sentiment_Label) FROM FNews_Timeline WHERE Date = CONVERT(date, NasdaqStocks.Date, 102) AND (Ticker_Sentiment_Label = 'Bullish' OR Ticker_Sentiment_Label = 'Somewhat-Bullish' ) AND Ticker = NasdaqStocks.Ticker) as 'BullishCount'
+FROM NasdaqStocks
+LEFT JOIN NasdaqCompanies ON NasdaqStocks.Ticker = NasdaqCompanies.Symbol
+LEFT JOIN FNews_Timeline ON NasdaqStocks.Ticker = FNews_Timeline.Ticker
+-- ORDER BY Company, CONVERT(date, NasdaqStocks.Date, 102) DESC ;
+GO
+/****** Object:  View [dbo].[NasdaqStock]    Script Date: 2/26/2024 8:43:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[NasdaqStock]
+AS
+SELECT ns.Ticker, nc.Company, ns.DateN, ns.OpenN, ns.HighN, ns.LowN, ns.CloseN, ns.Adj_Close, ns.Volume
+FROM     dbo.NasdaqStocks AS ns INNER JOIN
+                  dbo.NasdaqCompanies AS nc ON ns.Ticker = nc.Symbol
+GO
+/****** Object:  Table [dbo].[sp500]    Script Date: 2/26/2024 8:43:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[sp500](
+	[Symbol] [nvarchar](50) NOT NULL,
+	[Security] [nvarchar](50) NOT NULL,
+	[GICS_Sector] [nvarchar](50) NOT NULL,
+	[GICS_Sub_Industry] [nvarchar](100) NOT NULL,
+	[Headquarters_Location] [nvarchar](50) NOT NULL,
+	[Date_added] [date] NOT NULL,
+	[CIK] [int] NOT NULL,
+	[Founded] [nvarchar](50) NOT NULL,
+ CONSTRAINT [PK_sp500] PRIMARY KEY CLUSTERED 
+(
+	[Symbol] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[StocksData]    Script Date: 2/26/2024 8:43:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[StocksData](
+	[Date] [nvarchar](254) NULL,
+	[Ticker] [nvarchar](max) NULL,
+	[Company] [nvarchar](max) NULL,
+	[GICS_Sub_Industry] [nvarchar](max) NULL,
+	[Ticker_Sentiment_Analysis] [nvarchar](max) NULL,
+	[Open] [nvarchar](254) NULL,
+	[High] [nvarchar](254) NULL,
+	[Low] [nvarchar](254) NULL,
+	[Vol.] [nvarchar](254) NULL,
+	[CloseN] [nvarchar](max) NULL,
+	[Adj_Close] [nvarchar](max) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+#Afterwards data is ready to be read from alteryx.
