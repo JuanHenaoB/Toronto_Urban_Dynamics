@@ -1,0 +1,37 @@
+# Code for Data Source Hadoop
+# Required: Virtual Machine with Hadoop installed
+
+#Connect to virtual machine
+ssh azureuser@52.190.20.42
+
+#Upload data from local machine to azure vm
+mkdir data #Create new directory
+cd data #go to new directory
+mkdir final_project
+#Exit VM machine
+exit
+
+#Navigate to the directory or folder where Traffic Volume data is located
+cd TrafficVolume
+
+#copy data from local machine to vm
+scp TrafficVolume\*.* azureuser@52.190.20.42:~/data/final_project
+
+#Now if you check the VM you-ll see the data
+#login back to vm
+ssh azureuser@52.190.20.42
+
+#Create directories direction for hadoop
+hadoop fs -mkdir /user
+hadoop fs -mkdir /user/input
+hadoop fs -mkdir /user/input/TrafficVolume_data
+
+#copy data from vm into  hadoop to read the data
+cd final_project
+hadoop fs -put * /user/input/TrafficVolume_data
+
+#Confirm if data was successfully loaded into HDFS
+hadoop fs  -ls /user/input
+hadoop fs  -ls /user/input/Traffic_Volume_data
+
+#After this data is ready to be read by pyspark
