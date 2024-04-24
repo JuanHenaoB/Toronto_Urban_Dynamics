@@ -33,8 +33,8 @@ Application -> development ->dbeaver ce
 
 #sample database
 #https://www.mariadbtutorial.com/getting-started/mariadb-sample-database/
-#make sure you have copied nation file 
-#make sure you ahve nation.sql in yoru ubunto VM  /home/azureuser/data/nation/nation.sql*/
+#make sure you have copied TrafficVolume file 
+#make sure you ahve TrafficVolume.sql in yoru ubunto VM  /home/azureuser/data/nation/nation.sql*/
 
 ssh to terminal
 
@@ -42,32 +42,18 @@ mysql -u root -p
 Enter password: ********
 
 #Then, load the database by using the source command:
-mysql>source /home/azureuser/data/nation/nation.sql
+mysql>source /home/azureuser/data/TrafficVolume.sql
 
 #Code language: SQL (Structured Query Language) (sql)
 #Finally, select the nation database and display tables of the database:
 
-mysql> use nation;
+mysql> use TrafficVolume;
 Database changed
 mysql> show tables;
-+-------------------+
-| Tables_in_nation  |
-+-------------------+
-| continents        |
-| countries         |
-| country_languages |
-| country_stats     |
-| guests            |
-| languages         |
-| region_areas      |
-| regions           |
-| vips              |
-+-------------------+
-
 
 CREATE USER 'juanhenao'@localhost IDENTIFIED BY 'juanhenaopwd';
 SELECT User FROM mysql.user; 
-GRANT ALL PRIVILEGES ON nation.* TO 'juanhenao'@localhost;
+GRANT ALL PRIVILEGES ON TrafficVolume.* TO 'juanhenao'@localhost;
 FLUSH PRIVILEGES;
 
 quit
