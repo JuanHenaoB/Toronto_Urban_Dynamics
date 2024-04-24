@@ -1,0 +1,84 @@
+# Script to install MariaDB on a linux envoironment, for this project the team used a VM on Microsoft Azure
+# install dbeaver ce
+sudo add-apt-repository ppa:serge-rider/dbeaver-ce
+sudo apt-get update
+sudo apt-get install dbeaver-ce
+
+# install mariadb
+sudo apt update
+sudo apt install mariadb-server
+sudo systemctl start mariadb.service
+sudo mysql_secure_installation
+
+#provide following answers 
+#Enter current password for root (enter for none):   **just enter enter 
+#Switch to unix_socket authentication [Y/n] : n
+#Change the root password? [Y/n] : Y **provide a password: juanhenao
+#Remove anonymous users? [Y/n] n
+#Disallow root login remotely? [Y/n] n
+#Remove test database and access to it? [Y/n] n
+#Reload privilege tables now? [Y/n] Y
+
+sudo systemctl status mariadb
+#keep it running
+
+#after this, RDC to VM, 
+Application -> development ->dbeaver ce
+
+#First time connection 
+1. Database ->new database connection -> find mariadb
+2. click Next
+3. keep root  and supply the password you chose in installation
+4. test connection. save
+
+#sample database
+#https://www.mariadbtutorial.com/getting-started/mariadb-sample-database/
+#make sure you have copied nation file 
+#make sure you ahve nation.sql in yoru ubunto VM  /home/azureuser/data/nation/nation.sql*/
+
+ssh to terminal
+
+mysql -u root -p
+Enter password: ********
+
+#Then, load the database by using the source command:
+mysql>source /home/azureuser/data/nation/nation.sql
+
+#Code language: SQL (Structured Query Language) (sql)
+#Finally, select the nation database and display tables of the database:
+
+mysql> use nation;
+Database changed
+mysql> show tables;
++-------------------+
+| Tables_in_nation  |
++-------------------+
+| continents        |
+| countries         |
+| country_languages |
+| country_stats     |
+| guests            |
+| languages         |
+| region_areas      |
+| regions           |
+| vips              |
++-------------------+
+
+
+CREATE USER 'juanhenao'@localhost IDENTIFIED BY 'juanhenaopwd';
+SELECT User FROM mysql.user; 
+GRANT ALL PRIVILEGES ON nation.* TO 'juanhenao'@localhost;
+FLUSH PRIVILEGES;
+
+quit
+
+/**********************************
+copy mariadb driver
+***********************************/
+ssh  
+mkdir mariadbdriver
+exit
+scp *.jar azureuser@52.190.20.42:~/mariadbdriver
+ssh ??.??.??
+ls mariadbdriver/
+cp mariadbdriver/mariadb-java-client-3.3.2.jar /usr/local/spark/jars
