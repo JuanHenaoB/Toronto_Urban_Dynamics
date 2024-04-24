@@ -1,0 +1,59 @@
+# For this instructions the team used Snowflake CLI
+# First you need to connecto to Snowflake using account ID
+
+#Create a database
+CREATE OR REPLACE DATABASE gbctraining;
+
+#Check current database and schema
+SELECT CURRENT_DATABASE(), CURRENT_SCHEMA();
+
+# Note that the number of columns in the table, their positions, and their data types 
+#correspond to the fields in the sample CSV data files that you want to stage
+
+CREATE OR REPLACE TABLE CrimeIndicators (
+X NUMBER,
+Y NUMBER,
+OBJECTID INT,
+EVENT_UNIQUE_ID VARCHAR(216),
+REPORT_DATE	VARCHAR(216),
+OCC_DATE VARCHAR(216),
+REPORT_YEAR INT,
+REPORT_MONTH VARCHAR(16),
+REPORT_DAY INT,
+REPORT_DOY INT,
+REPORT_DOW VARCHAR(16),
+REPORT_HOUR INT,
+OCC_YEAR INT,
+OCC_MONTH VARCHAR(16),
+OCC_DAY INT,
+OCC_DOY INT,
+OCC_DOW	VARCHAR(16),
+OCC_HOUR INT,
+DIVISION VARCHAR(16)
+LOCATION_TYPE	VARCHAR(216)
+PREMISES_TYPE	VARCHAR(16)
+UCR_CODE INT,
+UCR_EXT INT,
+OFFENCE VARCHAR(216),
+MCI_CATEGORY VARCHAR(216),
+HOOD_158 VARCHAR(16),
+NEIGHBOURHOOD_158 VARCHAR(216),
+HOOD_140 VARCHAR(16),
+NEIGHBOURHOOD_140	VARCHAR(216),
+LONG_WGS84 FLOAT,
+LAT_WGS84 FLOAT);
+
+#show tables in database
+show tables;
+
+#Create a virtual warehouse, this will provide the compute resources needed 
+#to load data into the table and query the table. For this tutorial, 
+#you create an X-Small warehouse.
+CREATE OR REPLACE WAREHOUSE gbctraining_wh WITH
+WAREHOUSE_SIZE = 'X-SMALL'
+AUTO_SUSPEND = 180
+AUTO_RESUME = TRUE
+INITIALLY_SUSPENDED = TRUE;
+
+#Retrieve current warehouse
+SELECT CURRENT_WAREHOUSE();
